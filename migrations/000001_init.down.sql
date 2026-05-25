@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS idempotencies;
+DROP TABLE IF EXISTS callbacks;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS users;

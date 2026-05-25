@@ -1,54 +1,216 @@
 # Flipay - Mini Payment Gateway API
 
-Backend fintech simulation built with Golang, Gin, PostgreSQL, Redis queue worker, JWT authentication, idempotency, and webhook callback flow.
+![Go](https://img.shields.io/badge/Go-1.22-blue)
+![Gin](https://img.shields.io/badge/Gin-Framework-green)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue)
+![Redis](https://img.shields.io/badge/Redis-Queue-red)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED)
+![Swagger](https://img.shields.io/badge/Swagger-API%20Docs-85EA2D)
+![CI](https://github.com/LuthfiMirza/Flipay---Mini-Payment-Gateway-API/actions/workflows/ci.yml/badge.svg)
 
-## Current Focus: JWT Authentication
+Flipay is a **portfolio-grade fintech backend project** that simulates a mini payment gateway API. It demonstrates backend engineering practices commonly used in payment systems: JWT authentication, idempotent payment creation, PostgreSQL transactions, Redis queue processing, goroutine workers, webhook callbacks, structured logging, rate limiting, Swagger documentation, and CI/CD validation.
 
-Implemented auth endpoints:
+> Built to showcase clean backend architecture, production-style API design, and DevOps readiness for Golang backend engineer recruitment.
 
-- `POST /api/v1/auth/register`
-- `POST /api/v1/auth/login`
+## Demo Preview
 
-Auth module includes:
+| Landing Page | Swagger API Docs |
+| --- | --- |
+| ![Flipay Landing Page](docs/images/landing-page.svg) | ![Flipay Swagger UI](docs/images/swagger-ui.svg) |
 
-- User model and DTOs
-- Request validation using Gin binding tags
-- Password hashing using bcrypt
-- JWT access token generation
-- JWT middleware for protected routes
-- PostgreSQL repository with transaction on register
-- Clean JSON success and error responses
-- User migration SQL in `migrations/000001_init.up.sql`
+Local demo URLs after running the app:
+
+- Landing page: `http://localhost:8080/`
+- Health check: `http://localhost:8080/health`
+- Swagger UI: `http://localhost:8080/swagger/index.html`
+
+## Why This Project Is Strong for GitHub Portfolio
+
+- **Clean project structure** using handler, service, repository, middleware, worker, queue, and webhook layers.
+- **Clear README** with architecture, setup instructions, API examples, CI/CD, deployment notes, and screenshots.
+- **Real backend patterns** such as JWT auth, idempotency keys, async processing, webhooks, and rate limiting.
+- **DevOps readiness** with Docker, GitHub Actions, health check endpoint, and deployment guide.
+- **Fintech relevance** because it models payment gateway flows like VA, QRIS, callbacks, and payment statuses.
+
+## Core Features
+
+### Authentication
+
+- Register endpoint.
+- Login endpoint.
+- Password hashing with bcrypt.
+- JWT token generation.
+- JWT middleware for protected routes.
+
+### Payment Gateway
+
+- Create payment.
+- Generate virtual account number.
+- Generate QRIS simulation string.
+- Get payment detail.
+- Get payment history.
+- Payment statuses: `PENDING`, `SUCCESS`, `FAILED`, `EXPIRED`.
+- Idempotency key support to prevent duplicate payment creation.
+
+### Async Processing
+
+- Redis-backed queue simulation.
+- Goroutine worker for payment processing.
+- Retry mechanism skeleton with exponential backoff.
+- Dead-letter queue skeleton for exhausted jobs.
+
+### Webhook Callback
+
+- Webhook sender simulation.
+- HMAC signature generation and validation.
+- Callback delivery logs.
+
+### Production-Style Engineering
+
+- PostgreSQL transactions.
+- Structured JSON logging with Zap.
+- Request/correlation ID middleware.
+- Redis-based rate limiter.
+- Graceful shutdown for `SIGINT` and `SIGTERM`.
+- Swagger API documentation.
+- GitHub Actions CI pipeline.
 
 ## Tech Stack
 
-- Go + Gin
-- PostgreSQL + pgx
-- Redis
-- JWT
-- bcrypt
-- Zap logger
-- Docker Compose
-- golang-migrate compatible SQL migrations
+| Category | Technology |
+| --- | --- |
+| Language | Go 1.22 |
+| Web Framework | Gin |
+| Database | PostgreSQL |
+| Cache / Queue | Redis |
+| Auth | JWT, bcrypt |
+| Logging | Zap JSON Logger |
+| API Docs | Swagger / OpenAPI |
+| DevOps | Docker, Docker Compose, GitHub Actions |
+| Migration | SQL migration files |
+
+## Architecture
+
+```mermaid
+flowchart TD
+    Client[Client / Merchant App] --> API[Gin API]
+    API --> Middleware[Middleware Layer]
+    Middleware --> JWT[JWT Auth]
+    Middleware --> RateLimit[Redis Rate Limiter]
+    Middleware --> Logger[Request ID + Zap Logs]
+    Middleware --> PaymentService[Payment Service]
+    PaymentService --> Postgres[(PostgreSQL)]
+    PaymentService --> Redis[(Redis Queue)]
+    Redis --> Worker[Goroutine Worker]
+    Worker --> Postgres
+    Worker --> Webhook[Webhook Sender]
+    Webhook --> Merchant[Merchant Callback URL]
+```
+
+More detailed architecture notes are available in `architecture.md`.
+
+## Project Structure
+
+```text
+cmd/api              Application entrypoint, routes, graceful shutdown
+configs              Environment configuration
+internal/auth        Auth model, DTO, repository, service, handler
+internal/payment     Payment model, DTO, repository, service, handler
+internal/middleware  JWT, request logger, request ID, rate limiter
+internal/queue       Redis queue abstraction
+internal/worker      Async payment worker and expiration loop
+internal/webhook     Callback sender and receiver
+internal/database    PostgreSQL and Redis clients
+internal/utils       Shared response, generators, landing page
+migrations           SQL database migrations
+docs                 Swagger and deployment documentation
+.github/workflows    CI pipeline
+```
 
 ## Quick Start
 
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/LuthfiMirza/Flipay---Mini-Payment-Gateway-API.git
+cd Flipay---Mini-Payment-Gateway-API
+```
+
+### 2. Configure Environment
+
 ```bash
 cp .env.example .env
+```
+
+Example environment variables:
+
+```env
+APP_ENV=development
+APP_PORT=8080
+DATABASE_URL=postgres://flipay:flipay@localhost:5432/flipay?sslmode=disable
+REDIS_ADDR=localhost:6379
+JWT_SECRET=change-me
+WEBHOOK_SECRET=webhook-secret
+PAYMENT_EXPIRY_MINUTES=30
+```
+
+### 3. Start PostgreSQL and Redis
+
+```bash
 docker compose up -d postgres redis
+```
+
+### 4. Run Database Migration
+
+```bash
 migrate -path migrations -database "postgres://flipay:flipay@localhost:5432/flipay?sslmode=disable" up
+```
+
+### 5. Run Application
+
+```bash
 go mod tidy
 go run ./cmd/api
 ```
 
-If using Docker for the API too:
+Open:
+
+```text
+http://localhost:8080/
+```
+
+## Docker Setup
+
+Run the full stack with Docker Compose:
 
 ```bash
 cp .env.example .env
 docker compose up --build
 ```
 
-## Auth API
+Health check:
+
+```bash
+curl http://localhost:8080/health
+```
+
+Expected response:
+
+```json
+{"status":"ok"}
+```
+
+## API Documentation
+
+Swagger UI is available at:
+
+```text
+http://localhost:8080/swagger/index.html
+```
+
+Swagger notes and regeneration guide are available in `docs/swagger.md`.
+
+## API Examples
 
 ### Register
 
@@ -62,26 +224,6 @@ curl -X POST http://localhost:8080/api/v1/auth/register \
   }'
 ```
 
-Example response:
-
-```json
-{
-  "success": true,
-  "message": "user registered successfully",
-  "data": {
-    "access_token": "eyJhbGciOiJIUzI1NiIs...",
-    "token_type": "Bearer",
-    "expires_in": 86399,
-    "user": {
-      "id": "uuid",
-      "name": "Flip User",
-      "email": "user@example.com",
-      "created_at": "2026-05-26T10:00:00Z"
-    }
-  }
-}
-```
-
 ### Login
 
 ```bash
@@ -93,9 +235,7 @@ curl -X POST http://localhost:8080/api/v1/auth/login \
   }'
 ```
 
-## Sample JWT Usage
-
-Copy the `access_token` from register/login response, then call protected endpoints:
+### Use JWT Token
 
 ```bash
 TOKEN="paste-access-token-here"
@@ -104,76 +244,9 @@ curl http://localhost:8080/api/v1/payments/history \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-Create payment with JWT and idempotency key:
-
-```bash
-curl -X POST http://localhost:8080/api/v1/payments \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -H "Idempotency-Key: demo-key-001" \
-  -d '{
-    "amount": 150000,
-    "payment_method": "bank_transfer"
-  }'
-```
-
-## Endpoint List
-
-### Health
-
-```http
-GET /health
-```
-
-### Auth
-
-```http
-POST /api/v1/auth/register
-POST /api/v1/auth/login
-```
-
-### Payments
-
-Protected by `Authorization: Bearer <token>`.
-
-```http
-POST /api/v1/payments
-GET /api/v1/payments/:id
-GET /api/v1/payments/history
-```
-
-### Callback
-
-```http
-POST /api/v1/callbacks/payment
-```
-
-Callbacks must include `X-Flipay-Signature`, generated with HMAC-SHA256 over the raw JSON payload using `WEBHOOK_SECRET`.
-
-## Project Structure
-
-```text
-cmd/api              Application entrypoint and route wiring
-configs              Environment configuration
-internal/auth        Auth model, DTO, repository, service, handler
-internal/payment     Payment model, DTO, repository, service, handler
-internal/queue       Redis queue abstraction
-internal/worker      Async worker and expiration loop
-internal/webhook     Callback sender and receiver
-internal/middleware  JWT middleware
-internal/database    PostgreSQL and Redis clients
-migrations           SQL database migrations
-```
-
-## Payment Gateway API
-
-Payment endpoints are protected with JWT. Login first, then use the token as `Authorization: Bearer <token>`.
-
 ### Create Bank Transfer Payment
 
 ```bash
-TOKEN="paste-access-token-here"
-
 curl -X POST http://localhost:8080/api/v1/payments \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
@@ -182,28 +255,6 @@ curl -X POST http://localhost:8080/api/v1/payments \
     "amount": 150000,
     "payment_method": "bank_transfer"
   }'
-```
-
-The response includes a simulated virtual account number:
-
-```json
-{
-  "success": true,
-  "message": "payment created",
-  "data": {
-    "payment": {
-      "id": "payment-uuid",
-      "reference_no": "FLP-2026-000001",
-      "amount": 150000,
-      "payment_method": "bank_transfer",
-      "va_number": "8808123456789",
-      "status": "PENDING"
-    },
-    "idempotent": false,
-    "queued": true,
-    "status_check": "/api/v1/payments/payment-uuid"
-  }
-}
 ```
 
 ### Create QRIS Payment
@@ -219,23 +270,6 @@ curl -X POST http://localhost:8080/api/v1/payments \
   }'
 ```
 
-### Replay Idempotent Request
-
-Send the same body with the same `Idempotency-Key` to safely replay a payment creation request:
-
-```bash
-curl -X POST http://localhost:8080/api/v1/payments \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -H "Idempotency-Key: pay-demo-001" \
-  -d '{
-    "amount": 150000,
-    "payment_method": "bank_transfer"
-  }'
-```
-
-If the same key is reused with a different body, the API returns `409 Conflict`.
-
 ### Get Payment Detail
 
 ```bash
@@ -243,18 +277,7 @@ curl http://localhost:8080/api/v1/payments/payment-uuid \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-### Get Payment History
-
-```bash
-curl http://localhost:8080/api/v1/payments/history \
-  -H "Authorization: Bearer $TOKEN"
-```
-
-### Webhook Callback Simulation
-
-The worker updates payment status asynchronously and sends a callback to `WEBHOOK_URL` with `X-Flipay-Signature`.
-
-Manual callback test example:
+### Manual Webhook Callback Test
 
 ```bash
 PAYLOAD='{"payment_id":"payment-uuid","reference_no":"FLP-2026-000001","status":"SUCCESS","amount":150000}'
@@ -266,19 +289,80 @@ curl -X POST http://localhost:8080/api/v1/callbacks/payment \
   -d "$PAYLOAD"
 ```
 
-## Payment Processing Flow
+## Testing and Validation
 
-1. Client creates a payment with JWT and optional `Idempotency-Key`.
-2. API validates request and stores `PENDING` payment in PostgreSQL transaction.
-3. API pushes a compact job to Redis queue.
-4. Goroutine worker pops the job and simulates external payment processing.
-5. Worker updates status to `SUCCESS` or `FAILED`.
-6. Webhook sender posts callback payload to merchant callback URL.
-7. Expiration loop marks old `PENDING` payments as `EXPIRED`.
+Run local validation before pushing changes:
 
-## Payment Statuses
+```bash
+gofmt -w .
+go vet ./...
+go test ./...
+go build ./...
+```
 
-- `PENDING`: payment created and waiting to be processed.
-- `SUCCESS`: payment simulation succeeded.
-- `FAILED`: payment simulation failed.
-- `EXPIRED`: payment was not completed before `expired_at`.
+Docker Compose config validation:
+
+```bash
+docker compose config
+```
+
+## CI/CD
+
+GitHub Actions workflow: `.github/workflows/ci.yml`.
+
+The CI pipeline runs automatically on push and pull request to `main`:
+
+1. Checkout repository.
+2. Setup Go 1.22.
+3. Download dependencies.
+4. Validate formatting with `gofmt`.
+5. Run `go vet ./...`.
+6. Run `go test ./...`.
+7. Run `go build ./...`.
+
+Trigger CI by pushing to GitHub:
+
+```bash
+git push origin main
+```
+
+## Deployment
+
+Deployment guide is available in `docs/deployment.md`.
+
+Supported deployment targets:
+
+- Railway with Dockerfile deployment.
+- Render with Docker runtime.
+
+Recommended production health check endpoint:
+
+```http
+GET /health
+```
+
+## Learning Notes
+
+This project intentionally includes beginner-friendly comments in important backend areas:
+
+- Middleware and request lifecycle.
+- PostgreSQL transaction usage.
+- Redis queue and retry skeleton.
+- Worker processing flow.
+- Webhook signature validation.
+- Graceful shutdown.
+
+## Future Improvements
+
+- Add unit tests with mocked repositories.
+- Add integration tests using testcontainers.
+- Replace Redis list queue with Redis Streams.
+- Add OpenTelemetry tracing.
+- Add refresh token and logout support.
+- Add merchant dashboard and callback URL management.
+- Add database migration automation in deployment pipeline.
+- Add Kubernetes deployment manifests.
+
+## Author
+
+Built by [Luthfi Mirza](https://github.com/LuthfiMirza) as a Golang fintech backend portfolio project.

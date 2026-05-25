@@ -1,0 +1,24 @@
+<svg width="1200" height="700" viewBox="0 0 1200 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="700" fill="#0f172a"/>
+  <rect x="80" y="70" width="1040" height="560" rx="24" fill="#111827" stroke="#334155"/>
+  <rect x="120" y="115" width="230" height="36" rx="18" fill="#064e3b"/>
+  <text x="142" y="139" fill="#bbf7d0" font-family="Arial" font-size="16">API Running • Portfolio</text>
+  <text x="120" y="220" fill="#e2e8f0" font-family="Arial" font-size="52" font-weight="700">Flipay Payment Gateway API</text>
+  <text x="120" y="270" fill="#cbd5e1" font-family="Arial" font-size="24">Go fintech backend with JWT, Redis worker, PostgreSQL, Swagger, and webhooks.</text>
+  <rect x="120" y="320" width="210" height="56" rx="12" fill="#2563eb"/>
+  <text x="157" y="355" fill="#ffffff" font-family="Arial" font-size="18" font-weight="700">Swagger Docs</text>
+  <rect x="350" y="320" width="170" height="56" rx="12" fill="#1e293b" stroke="#475569"/>
+  <text x="388" y="355" fill="#ffffff" font-family="Arial" font-size="18" font-weight="700">Health</text>
+  <rect x="120" y="430" width="280" height="140" rx="16" fill="#0f172a" stroke="#334155"/>
+  <text x="145" y="470" fill="#e2e8f0" font-family="Arial" font-size="24" font-weight="700">Core Features</text>
+  <text x="145" y="510" fill="#cbd5e1" font-family="Arial" font-size="18">JWT • Payments • Queue</text>
+  <text x="145" y="540" fill="#cbd5e1" font-family="Arial" font-size="18">Webhook • Idempotency</text>
+  <rect x="460" y="430" width="280" height="140" rx="16" fill="#0f172a" stroke="#334155"/>
+  <text x="485" y="470" fill="#e2e8f0" font-family="Arial" font-size="24" font-weight="700">Endpoints</text>
+  <text x="485" y="510" fill="#a7f3d0" font-family="Arial" font-size="18">/api/v1/payments</text>
+  <text x="485" y="540" fill="#a7f3d0" font-family="Arial" font-size="18">/swagger/index.html</text>
+  <rect x="800" y="430" width="280" height="140" rx="16" fill="#0f172a" stroke="#334155"/>
+  <text x="825" y="470" fill="#e2e8f0" font-family="Arial" font-size="24" font-weight="700">Tech Stack</text>
+  <text x="825" y="510" fill="#cbd5e1" font-family="Arial" font-size="18">Go • Gin • PostgreSQL</text>
+  <text x="825" y="540" fill="#cbd5e1" font-family="Arial" font-size="18">Redis • Docker • CI</text>
+</svg>

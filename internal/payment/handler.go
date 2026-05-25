@@ -19,6 +19,20 @@ func NewHandler(service Service, logger *zap.Logger) *Handler {
 	return &Handler{service: service, logger: logger}
 }
 
+// Create godoc
+// @Summary Create payment
+// @Description Create a payment, generate VA/QRIS data, persist idempotency, and enqueue async processing.
+// @Tags Payments
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param Idempotency-Key header string false "Unique key for safe request retry"
+// @Param request body CreatePaymentRequest true "Payment payload"
+// @Success 201 {object} map[string]any
+// @Failure 400 {object} map[string]any
+// @Failure 401 {object} map[string]any
+// @Failure 409 {object} map[string]any
+// @Router /api/v1/payments [post]
 func (h *Handler) Create(c *gin.Context) {
 	var req CreatePaymentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -46,6 +60,17 @@ func (h *Handler) Create(c *gin.Context) {
 	utils.Success(c, statusCode, message, res)
 }
 
+// Detail godoc
+// @Summary Get payment detail
+// @Description Get a single payment owned by the authenticated user.
+// @Tags Payments
+// @Security BearerAuth
+// @Produce json
+// @Param id path string true "Payment ID"
+// @Success 200 {object} map[string]any
+// @Failure 401 {object} map[string]any
+// @Failure 404 {object} map[string]any
+// @Router /api/v1/payments/{id} [get]
 func (h *Handler) Detail(c *gin.Context) {
 	res, err := h.service.FindByID(c.Request.Context(), c.Param("id"), c.GetString("user_id"))
 	if err != nil {
@@ -60,6 +85,15 @@ func (h *Handler) Detail(c *gin.Context) {
 	utils.Success(c, http.StatusOK, "payment detail", res)
 }
 
+// History godoc
+// @Summary Get payment history
+// @Description List payments owned by the authenticated user.
+// @Tags Payments
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {object} map[string]any
+// @Failure 401 {object} map[string]any
+// @Router /api/v1/payments/history [get]
 func (h *Handler) History(c *gin.Context) {
 	res, err := h.service.History(c.Request.Context(), c.GetString("user_id"))
 	if err != nil {

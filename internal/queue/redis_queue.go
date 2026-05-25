@@ -8,7 +8,10 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-const PaymentQueue = "flipay:payments"
+const (
+	PaymentQueue           = "flipay:payments"
+	PaymentDeadLetterQueue = "flipay:payments:dead"
+)
 
 // PaymentJob is the small payload sent to Redis. Keep queue messages compact.
 type PaymentJob struct {
@@ -19,6 +22,7 @@ type PaymentJob struct {
 type Queue interface {
 	PushPayment(ctx context.Context, job PaymentJob) error
 	PushPaymentWithDelay(ctx context.Context, job PaymentJob, delay time.Duration) error
+	PushDeadLetter(ctx context.Context, job PaymentJob, reason string) error
 	PopPayment(ctx context.Context) (PaymentJob, error)
 }
 
@@ -51,6 +55,18 @@ func (q *RedisQueue) PushPaymentWithDelay(ctx context.Context, job PaymentJob, d
 		}
 	}()
 	return nil
+}
+
+func (q *RedisQueue) PushDeadLetter(ctx context.Context, job PaymentJob, reason string) error {
+	payload, err := json.Marshal(map[string]any{
+		"job":       job,
+		"reason":    reason,
+		"failed_at": time.Now().UTC(),
+	})
+	if err != nil {
+		return err
+	}
+	return q.client.RPush(ctx, PaymentDeadLetterQueue, payload).Err()
 }
 
 func (q *RedisQueue) PopPayment(ctx context.Context) (PaymentJob, error) {

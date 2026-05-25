@@ -73,6 +73,7 @@ func (w *PaymentWorker) processPayment(ctx context.Context, job queue.PaymentJob
 func (w *PaymentWorker) retry(ctx context.Context, job queue.PaymentJob, cause error) {
 	if job.Attempt >= maxPaymentAttempts {
 		w.logger.Error("payment job exhausted retries", zap.String("payment_id", job.PaymentID), zap.Int("attempt", job.Attempt), zap.Error(cause))
+		_ = w.queue.PushDeadLetter(ctx, job, cause.Error())
 		return
 	}
 	job.Attempt++
